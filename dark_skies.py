@@ -6,13 +6,9 @@
 
 
 import astral
+import pyephem
 import pandas
 
-a = astral.Astral()
-a.solar_depression = 'civil'
-
-start_date = "01/01/2018"
-end_date = "31/12/2018"
 
 name = "Albury"
 region = 'Australia'
@@ -21,6 +17,10 @@ lon = 146.91
 timezone = "Australia/Sydney"
 elev = 160
 
+# create the object we'll use to determine rise & set times
 location = astral.Location((name, region, lat, lon, timezone, elev))
 
+start_date = "01/01/2018"
+end_date = "31/12/2018"
+# list of dates in 2018
 dates = pandas.date_range(start=start_date, end=end_date, timezone=location.timezone).tolist()
