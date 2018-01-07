@@ -7,41 +7,42 @@
 
 import ephem
 import pandas
+import time
+from datetime import datetime
 
 
 name = "Albury"
-region = 'Australia'
+region = "Australia"
 lat = -36.07
 lon = 146.91
 timezone = "Australia/Sydney"
 elev = 160
 
-# create the object we'll use to determine rise & set times
-location = astral.Location((name, region, lat, lon, timezone, elev))
+# start_date = "01/01/2018"
+# end_date = "31/12/2018"
+# # list of dates in 2018
+# dates = pandas.date_range(start=start_date, end=end_date, timezone=location.timezone).tolist()
 
-start_date = "01/01/2018"
-end_date = "31/12/2018"
-# list of dates in 2018
-dates = pandas.date_range(start=start_date, end=end_date, timezone=location.timezone).tolist()
+observer = ephem.Observer()
+observer.lat = str(lat)
+observer.lon = str(lon)
 
+# pyephem uses UTC so we need to find our local offset
+# this should take in to account daylight davings when calculating past & future dates
+local_now = time.time()
+utc_offset = datetime.fromtimestamp(local_now) - datetime.utcfromtimestamp(local_now)
 
-def event(event_type, lat, lon):
+# event_dict = { 'sunset': [ephem.Sun, observer.next_setting],
+#               'sunrise': [ephem.Sun, observer.next_rising],
+#               'moonset': [ephem.Moon, observer.next_setting],
+#               'moonrise': [ephem.Moon, observer.next_rising] }
 
-    observer = ephem.Observer()
-    observer.lat = str(lat)
-    observer.lon = str(lon)
+# body = event_dict[event_type][0]()
+# utc_sunset_time = ephem.Date(event_dict[event_type][1](body))
 
-    local_now = time.time()
-    utc_offset = datetime.fromtimestamp(local_now) - datetime.utcfromtimestamp(local_now)
+moon = ephem.Moon()
+event = observer.next_rising(moon)
+event_utc = ephem.Date(event)
+event_local = event_utc.datetime() + utc_offset
 
-    event_dict = { 'sunset': [ephem.Sun, observer.next_setting],
-                  'sunrise': [ephem.Sun, observer.next_rising],
-                  'moonset': [ephem.Moon, observer.next_setting],
-                  'moonrise': [ephem.Moon, observer.next_rising] }
-
-    body = event_dict[event_type][0]()
-    utc_sunset_time = ephem.Date(event_dict[event_type][1](body))
-
-    event_time = utc_sunset_time.datetime() + utc_offset
-    # print "Today the sun will set @ {}".format(datetime.strftime(now, "%Y/%m/%d %H:%M:%S"))
-    return event_time
+print event_local
