@@ -9,19 +9,32 @@ import ephem
 import pandas
 import time
 from datetime import datetime
+import pytz
 
 
 name = "Albury"
-region = "Australia"
+# region = "Australia"
 lat = -36.07
 lon = 146.91
 timezone = "Australia/Sydney"
-elev = 160
+# elev = 160
 
-start_date = "01/01/2018"
+start_date = "01/02/2018"
 end_date = "31/12/2018"
 # list of dates in 2018
-dates = pandas.date_range(start=start_date, end=end_date, timezone=timezone).tolist()
+# p_dates = pandas.date_range(start=start_date, end=end_date, timezone=timezone).tolist()
+p_dates = pandas.date_range(start=start_date, end=end_date).tolist()
+dates = []
+
+for utc_date in p_dates:
+    local = pytz.timezone(timezone)
+    localtime = local.localize(utc_date.to_datetime())
+    utc_offset = localtime.utcoffset()
+
+    date_data = (utc_date, utc_offset)
+
+    dates.append(date_data)
+
 
 observer = ephem.Observer()
 observer.name = name
@@ -30,12 +43,9 @@ observer.lon = str(lon)
 # set the horizon to 18 degrees below 0 to simulate astronomical twilight
 # observer.horizon = "-18"
 
-# pyephem uses UTC so we need to find our local offset
-# this should take in to account daylight davings when calculating past & future dates
-local_now = time.time()
-utc_offset = datetime.fromtimestamp(local_now) - datetime.utcfromtimestamp(local_now)
 for date in dates:
-    observer.date = date
+
+    observer.date = date[0]
 
     # event_dict = { 'sunset': [ephem.Sun, observer.next_setting],
     #               'sunrise': [ephem.Sun, observer.next_rising],
@@ -46,13 +56,9 @@ for date in dates:
     # utc_sunset_time = ephem.Date(event_dict[event_type][1](body))
 
     moon = ephem.Moon()
-    event = observer.next_rising(moon, use_center=True)
+    event = observer.next_rising(moon, use_center=False)
     event_utc = ephem.Date(event)
-    event_local = event_utc.datetime() + utc_offset
-    illum = int(moon.phase/10)
-    phase = chr(219)*illum+chr(176)*(10-illum)
-    print "Next rising: {} - {} {}".format(date, event_local, phase)
-
-
-print event_local
-print moon.phase
+    event_local = event_utc.datetime() + date[1]
+    illum = int(round(moon.phase/5.0))
+    phase = chr(219)*illum+chr(176)*(20-illum)
+    print "Next rising: {} - {} {} {}%".format(date[0], event_local, phase, int(round(moon.phase)))
