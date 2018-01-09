@@ -35,7 +35,7 @@ def date_range(start_date=start_date, end_date=end_date):
 
     for utc_date in p_dates:
         local = pytz.timezone(timezone)
-        localtime = local.localize(utc_date.to_datetime())
+        localtime = local.localize(utc_date.to_pydatetime())
         utc_offset = localtime.utcoffset()
 
         date_data = (utc_date, utc_offset)
@@ -78,8 +78,8 @@ def moon_transit(dates=date_range()):
     observer.lat = str(lat)
     observer.lon = str(lon)
 
-    dates_order = [ date[0].to_datetime() for date in dates ]
-    transit = { date.to_datetime(): [utc_offset, []] for date, utc_offset in dates }
+    dates_order = [ date[0].to_pydatetime() for date in dates ]
+    transit = { date.to_pydatetime(): [utc_offset, []] for date, utc_offset in dates }
 
     observer = ephem.Observer()
     observer.name = name
@@ -118,23 +118,41 @@ def moon_transit(dates=date_range()):
         transit[t][1].sort()
 
     for d in dates_order:
-        events_count = len(transit[d])
+        events = transit[d][1]
+        events_count = len(events)
         day = 86400
-        up = chr(219)
         dn = chr(176)
+        up = chr(219)
         result = ""
+        start = d
 
-        start_len = transit[d][0][0] - d
-        start_len = int(start.total_seconds())
-
-        if transit[d][0][1] == 'rising':
-            result = result + dn * start_len
-        else:
-            result = result + up * start_len
-
-        print start
-
+        # start_len = transit[d][1][0][0] - d
+        # start_len = int(start_len.total_seconds())/1800
         #
+        # if transit[d][1][0][1] == 'rising':
+        #     result = result + dn * start_len
+        # else:
+        #     result = result + up * start_len
+
+        for event in events:
+            before = up if event[1] == 'setting' else dn
+            length = event[0] - start
+            length = int(length.total_seconds())
+            result += before*(length/1800)
+            start = event[0]
+
+        # tomorrow = d + timedelta(days=1)
+        # remaining = tomorrow - event[0]
+        # remaining = int(remaining.total_seconds())
+        # result += before*(remaining/1800)
+        before = up if before == dn else dn
+        result += before*(48-len(result))
+        result += " "+d.strftime("%Y-%m-%d")
+
+
+        print result
+
+        # transit = { date.to_pydatetime(): [utc_offset, []] for date, utc_offset in dates }
         # for event in transit[d]:
         #     if event[1] == 'rising':
         #         result = result +
@@ -144,7 +162,7 @@ def moon_transit(dates=date_range()):
 
 
 
-    return dates_order, transit
+    # return dates_order, transit
 
 
 
