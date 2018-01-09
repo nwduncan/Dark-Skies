@@ -117,11 +117,32 @@ def moon_transit(dates=date_range()):
     for t in transit:
         transit[t][1].sort()
 
-    # for d in dates_order:
-    #     events = len(transit[d])
-    #
-    # up = chr(219)
-    # dn = chr(176)
+    for d in dates_order:
+        events_count = len(transit[d])
+        day = 86400
+        up = chr(219)
+        dn = chr(176)
+        result = ""
+
+        start_len = transit[d][0][0] - d
+        start_len = int(start.total_seconds())
+
+        if transit[d][0][1] == 'rising':
+            result = result + dn * start_len
+        else:
+            result = result + up * start_len
+
+        print start
+
+        #
+        # for event in transit[d]:
+        #     if event[1] == 'rising':
+        #         result = result +
+
+
+
+
+
 
     return dates_order, transit
 
