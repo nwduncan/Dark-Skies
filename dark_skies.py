@@ -1,8 +1,6 @@
 # a basic program that determines the best nights for stargazing based on the
 # moon's phase and rise/set times
 
-# refer to https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for
-# possible tz variables
 
 
 import ephem
@@ -161,10 +159,6 @@ def moon_transit(dates=date_range()):
 
 
 
-
-    # return dates_order, transit
-
-
 def event_times(observer, event, date):
 
     return
@@ -176,39 +170,14 @@ def dark_skies(dates=date_range(), horizon=0):
     return
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## notes
+# refer to https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for possible tz variables
+# moon_phase method instead of phase method when returning current moon illumination
+# body.separation method provides angle between two positions on sphere
+# from ephem import cities >> albury = cities.lookup('Albury, Australia') returns lat lon for Albury
+# when sun/moon(?) never rise/set at the poles an ephem.CircumpolarError error will be thrown for next_xxx() methods which needs to be taken in to account
 
 
 ## resources
 # Moon illumination and resulting skyglow relationship
 # http://www.skyandtelescope.com/astronomy-resources/astronomy-questions-answers/how-does-the-moons-phase-affect-the-skyglow-of-any-given-location-and-how-many-days-before-or-after-a-new-moon-is-a-dark-site-not-compromised/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
