@@ -34,8 +34,9 @@ def date_range(start_date=start_date, end_date=end_date):
     dates = []
 
     for utc_date in p_dates:
+        utc_date = utc_date.to_pydatetime()
         local = pytz.timezone(timezone)
-        localtime = local.localize(utc_date.to_pydatetime())
+        localtime = local.localize(utc_date)
         utc_offset = localtime.utcoffset()
 
         date_data = (utc_date, utc_offset)
@@ -78,8 +79,8 @@ def moon_transit(dates=date_range()):
     observer.lat = str(lat)
     observer.lon = str(lon)
 
-    dates_order = [ date[0].to_pydatetime() for date in dates ]
-    transit = { date.to_pydatetime(): [utc_offset, []] for date, utc_offset in dates }
+    dates_order = [ date[0] for date in dates ]
+    transit = { date: [utc_offset, []] for date, utc_offset in dates }
 
     observer = ephem.Observer()
     observer.name = name
@@ -120,7 +121,6 @@ def moon_transit(dates=date_range()):
     for d in dates_order:
         events = transit[d][1]
         events_count = len(events)
-        day = 86400
         dn = chr(176)
         up = chr(219)
         result = ""
@@ -157,13 +157,44 @@ def moon_transit(dates=date_range()):
         #     if event[1] == 'rising':
         #         result = result +
 
-
+    return dates, transit
 
 
 
 
     # return dates_order, transit
 
+
+def event_times(observer, event, date):
+
+    return
+
+
+
+def dark_skies(dates=date_range(), horizon=0):
+
+    return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## resources
+# Moon illumination and resulting skyglow relationship
+# http://www.skyandtelescope.com/astronomy-resources/astronomy-questions-answers/how-does-the-moons-phase-affect-the-skyglow-of-any-given-location-and-how-many-days-before-or-after-a-new-moon-is-a-dark-site-not-compromised/
 
 
 
