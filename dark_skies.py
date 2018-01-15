@@ -116,8 +116,10 @@ def moon_transit(dates=date_range()):
     for t in transit:
         transit[t][1].sort()
 
-    print " 1 2 3 4 5 6 7 8 9 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2"
-    print "                   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4"
+    hours = []
+    for i in range(1,3):
+        hours.append(" "+" ".join([ str(x)[i] for x in range(101, 125) ]))
+    print "\n".join(hours)
 
     for d in dates_order:
         events = transit[d][1]
