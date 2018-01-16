@@ -17,16 +17,19 @@ lat = -36.07
 lon = 146.91
 timezone = "Australia/Sydney"
 # elev = 160
-
-start_date = "01/01/2018"
-end_date = "31/12/2018"
+observer = ephem.Observer()
+observer.name = name
+observer.lat = str(lat)
+observer.lon = str(lon)
+start_date = datetime(2018,8,1)
+end_date = datetime(2018,8,31)
 # list of dates in 2018
 # p_dates = pandas.date_range(start=start_date, end=end_date, timezone=timezone).tolist()
 
 # each night should be attributed to a single date
 # possibly change each day to the 24 hour period between noon?
 
-def date_range(start_date=start_date, end_date=end_date):
+def date_range(start_date=start_date, end_date=end_date, time_adjust=0):
 
     p_dates = pandas.date_range(start=start_date, end=end_date).tolist()
     dates = []
@@ -36,15 +39,14 @@ def date_range(start_date=start_date, end_date=end_date):
         local = pytz.timezone(timezone)
         localtime = local.localize(utc_date)
         utc_offset = localtime.utcoffset()
-
-        date_data = (utc_date, utc_offset)
-
+        adjusted_time = utc_date + time_adjust
+        date_data = (adjusted_time, utc_offset)
         dates.append(date_data)
 
     return dates
 
 
-def moon_phases(dates=date_range()):
+def moon_phases(dates):
 
     # define location parameters
     observer = ephem.Observer()
@@ -69,7 +71,9 @@ def moon_phases(dates=date_range()):
         print "{} Next rising: {} {} {}%".format(day, next_rising, phase, int(round(moon.phase)))
 
 
-def moon_transit(dates=date_range()):
+def transit(bodies=[ephem.Sun(), ephem.Moon()], start_date=start_date, end_date=end_date, time_adjust=timedelta(hours=12)):
+
+    dates = date_range(start_date, end_date, time_adjust)
 
     # define location parameters
     observer = ephem.Observer()
@@ -78,102 +82,138 @@ def moon_transit(dates=date_range()):
     observer.lon = str(lon)
 
     dates_order = [ date[0] for date in dates ]
-    transit = { date: [utc_offset, []] for date, utc_offset in dates }
-
-    observer = ephem.Observer()
-    observer.name = name
-    observer.lat = str(lat)
-    observer.lon = str(lon)
+    transit_details = { date: [utc_offset, []] for date, utc_offset in dates }
 
     for d in dates_order:
-        observer.date = d
-        moon = ephem.Moon()
 
-        # event type
-        rising = observer.next_rising(moon, use_center=False)
-        setting = observer.next_setting(moon, use_center=False)
-        # utc time of event
-        rising_utc = ephem.Date(rising)
-        setting_utc = ephem.Date(setting)
+        for body in bodies:
+            # get the next rise & set times
+            rising_local, setting_local = rise_and_set(observer, body, d, transit_details[d][0])
+            # current date +1 day
+            d_next = d + timedelta(days=1)
 
-        # local time of event (round minutes)
-        # rising_local = rising_utc.datetime() + transit[d][0]
-        # setting_local = setting_utc.datetime() + transit[d][0]
-        rising_local = rising_utc.datetime() + transit[d][0]
-        rising_local = datetime(rising_local.year, rising_local.month, rising_local.day, rising_local.hour, rising_local.minute)
-        setting_local = setting_utc.datetime() + transit[d][0]
-        setting_local = datetime(setting_local.year, setting_local.month, setting_local.day, setting_local.hour, setting_local.minute)
-        # local date of event (used to find correct value in transit dict)
-        rising_date = datetime(rising_local.year, rising_local.month, rising_local.day)
-        setting_date = datetime(setting_local.year, setting_local.month, setting_local.day)
+            # make sure not out of our date range and attempting to assign a value to a non-existant key
+            if d <= rising_local < d_next:
+                transit_details[d][1].append([rising_local, 'rising', body.name])
+            elif d_next in dates_order:
+                transit_details[d_next][1].append([rising_local, 'rising', body.name])
 
-        if rising_date <= dates_order[-1] and [rising_local, 'rising'] not in transit[rising_date][1]:
-            transit[rising_date][1].append([rising_local, 'rising'])
+            if d <= setting_local < d_next:
+                transit_details[d][1].append([setting_local, 'setting', body.name])
+            elif d_next in dates_order:
+                transit_details[d_next][1].append([setting_local, 'setting', body.name])
 
-        if setting_date <= dates_order[-1] and [setting_local, 'setting'] not in transit[setting_date][1]:
-            transit[setting_date][1].append([setting_local, 'setting'])
+    for t in transit_details:
+        transit_details[t][1].sort()
 
-    for t in transit:
-        transit[t][1].sort()
-
-    hours = []
-    for i in range(1,3):
-        hours.append(" "+" ".join([ str(x)[i] for x in range(101, 125) ]))
-    print "\n".join(hours)
 
     for d in dates_order:
-        events = transit[d][1]
-        events_count = len(events)
-        dn = chr(176)
-        up = chr(219)
-        result = ""
-        start = d
+        to_print = ""
+        to_print+=str(d)+"  "
+        for event in transit_details[d][1]:
+            to_print+=str(event[0])+"  "
+        print to_print
 
-        # start_len = transit[d][1][0][0] - d
-        # start_len = int(start_len.total_seconds())/1800
-        #
-        # if transit[d][1][0][1] == 'rising':
-        #     result = result + dn * start_len
-        # else:
-        #     result = result + up * start_len
+    # return transit_details
 
-        for event in events:
-            before = up if event[1] == 'setting' else dn
-            length = event[0] - start
-            length = int(length.total_seconds())
-            result += before*(length/1800)
-            start = event[0]
+    # print " 1 1 1 1 1 1 1 2 2 2 2 2 0 0 0 0 0 0 0 0 0 1 1 1"
+    # print " 3 4 5 6 7 8 9 0 1 2 3 4 1 2 3 4 5 6 7 8 9 0 1 2"
+    # for d in dates_order:
+    #     events = transit_details[d][1]
+    #     events_count = len(events)
+    #     dn = chr(176)
+    #     up = chr(219)
+    #     result = ""
+    #     start = d
+    #
+    #     # start_len = transit[d][1][0][0] - d
+    #     # start_len = int(start_len.total_seconds())/1800
+    #     #
+    #     # if transit[d][1][0][1] == 'rising':
+    #     #     result = result + dn * start_len
+    #     # else:
+    #     #     result = result + up * start_len
+    #     for event in events:
+    #         before = up if event[1] == 'setting' else dn
+    #         length = event[0] - start
+    #         length = int(length.total_seconds())
+    #         result += before*(length/450)
+    #         start = event[0]
+    #
+    #     # tomorrow = d + timedelta(days=1)
+    #     # remaining = tomorrow - event[0]
+    #     # remaining = int(remaining.total_seconds())
+    #     # result += before*(remaining/1800)
+    #     before = up if before == dn else dn
+    #     result += before*(192-len(result))
+    #     result += " "+d.strftime("%Y-%m-%d")
 
-        # tomorrow = d + timedelta(days=1)
-        # remaining = tomorrow - event[0]
-        # remaining = int(remaining.total_seconds())
-        # result += before*(remaining/1800)
-        before = up if before == dn else dn
-        result += before*(48-len(result))
-        result += " "+d.strftime("%Y-%m-%d")
 
-
-        print result
+        # print result
 
         # transit = { date.to_pydatetime(): [utc_offset, []] for date, utc_offset in dates }
         # for event in transit[d]:
         #     if event[1] == 'rising':
         #         result = result +
 
-    return dates, transit
+    return dates, transit_details
+
+
+def rise_and_set(observer, body, date, utc_offset):
+
+    # convert search time (at local) to UTC time
+    observer.date = date - utc_offset
+
+    # event type
+    rising = observer.next_rising(body, use_center=False)
+    setting = observer.next_setting(body, use_center=False)
+
+    # utc time of event
+    rising_utc = ephem.Date(rising).datetime()
+    setting_utc = ephem.Date(setting).datetime()
+    # print "utc rise: "+str(rising_utc)
+    # print "utc  set: "+str(setting_utc)
+
+    #convert to local time (and remove any time values < second)
+    rising_local = rising_utc + utc_offset
+    rising_local = datetime(rising_local.year, rising_local.month, rising_local.day, rising_local.hour, rising_local.minute)
+    setting_local = setting_utc + utc_offset
+    setting_local = datetime(setting_local.year, setting_local.month, setting_local.day, setting_local.hour, setting_local.minute)
+
+
+    # print date, rising_local, setting_local
+
+    return rising_local, setting_local
 
 
 
-def event_times(observer, event, date):
-
-    return
 
 
 
-def dark_skies(dates=date_range(), horizon=0):
 
-    return
 
+
+
+
+
+
+
+
+
+
+
+
+#
+# def event_times(observer, event, date):
+#
+#     return
+#
+#
+#
+# def dark_skies(dates=date_range(), horizon=0):
+#
+#     return
+#
 
 ## notes
 # refer to https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for possible tz variables
