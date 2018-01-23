@@ -5,6 +5,8 @@ import pandas
 from datetime import datetime
 from datetime import timedelta
 import pytz
+from PIL import Image, ImageDraw
+from os.path import join
 
 # location parameters
 name = "Albury"
@@ -19,7 +21,7 @@ observer.name = name
 observer.lat = str(lat)
 observer.lon = str(lon)
 start_date = datetime(2018,8,1)
-end_date = datetime(2018,10,31)
+end_date = datetime(2018,8,31)
 
 
 # return a date range including UTC offset for each date
@@ -70,6 +72,8 @@ def moon_phases(dates=date_range()):
 
 def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon=0):
 
+    output = open('page.html', 'w')
+
     # get the date range
     dates = date_range(start_date, end_date, time_adjust)
     # establish bodies
@@ -119,13 +123,17 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
     def return_chr(state):
         sun_pos, moon_pos = state
         if sun_pos and moon_pos:
-            return chr(219)
+            # return chr(219)
+            return (255,255,255)
         elif sun_pos and not moon_pos:
-            return chr(178)
+            # return chr(178)
+            return (255,255,0)
         elif not sun_pos and moon_pos:
-            return chr(176)
+            # return chr(176)
+            return (0,0,102)
         else:
-            return " "
+            # return " "
+            return (0,0,0)
 
     # change the current state based on what's above the horizon
     def change_state(current_state, change, body):
@@ -138,22 +146,26 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
 
     # print variables
     day_length = 86400
-    print_length = 96
-
-    # header details
-    header = "Dark Skies: {} >> {}".format(dates_order[0].date(), dates_order[-1].date())
-    header = "-"*(print_length/2-18)+header+"-"*(print_length/2-18)
-    print header
-    # time markers
-    times = [ str(x) if len(str(x)) == 2 else '0'+str(x) for x in range(12,25)+range(1,12) ]
-    time_markers = ""
-    for t in times:
-        time_markers += "|"+t+" "*((print_length/24)-3)
-    print time_markers
+    print_length = 900
+    #
+    # # header details
+    # header = "Dark Skies: {} >> {}".format(dates_order[0].date(), dates_order[-1].date())
+    # header = "-"*(print_length/2-18)+header+"-"*(print_length/2-18)
+    # print header
+    # # time markers
+    # times = [ str(x) if len(str(x)) == 2 else '0'+str(x) for x in range(12,25)+range(1,12) ]
+    # time_markers = ""
+    # for t in times:
+    #     time_markers += "|"+t+" "*((print_length/24)-3)
+    # print time_markers
 
     # go through each date
     for d in dates_order:
-        to_print = ""
+        # to_print = ""
+        filename = str(d.date())+'.png'
+        path = join('images', str(d.date())+'.png')
+        image = Image.new('RGB', (900, 20), (255,255,255))
+        draw = ImageDraw.Draw(image)
 
         # get current sun & moon positions
         sun_pos = transit_details[d][1]['sun']
@@ -163,6 +175,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
         c_state = [sun_pos, moon_pos]
         c_chr = return_chr(c_state)
         c_time = d
+        length_count = 0
 
         # iterate over events for the day
         for event in transit_details[d][2]:
@@ -174,17 +187,20 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
             length = n_time - c_time
             # length of string to add to to_print
             length = int(round(length.total_seconds()/day_length*print_length, 0))
-            to_print += c_chr*length
+            # to_print += c_chr*length
+            draw.rectangle((length_count, 0, length, 20), c_chr)
 
             # apply next variables to current variables to prepare for next iteration
             c_state = n_state
             c_chr = return_chr(c_state)
             c_time = n_time
+            length_count += length
 
         # finalise to_print and print it
-        to_print += c_chr*(print_length-len(to_print))+" >> "+str(d.date())
-
-        print to_print
+        # to_print += c_chr*(print_length-len(to_print))+" >> "+str(d.date())
+        image.save(path)
+        output.write('<img src="images\{}">'.format(filename))
+        # print to_print
 
 
 # return the next rise and set times
