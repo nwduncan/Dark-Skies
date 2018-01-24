@@ -24,25 +24,25 @@ start_date = datetime(2018,8,1)
 end_date = datetime(2018,8,31)
 
 
-# return a date range including UTC offset for each date
-def date_range(start_date=start_date, end_date=end_date, time_adjust=0):
-
-    if not type(time_adjust) == timedelta:
-        time_adjust = timedelta(hours=time_adjust)
-
-    p_dates = pandas.date_range(start=start_date, end=end_date).tolist()
-    dates = []
-
-    for utc_date in p_dates:
-        utc_date = utc_date.to_pydatetime()
-        local = pytz.timezone(timezone)
-        localtime = local.localize(utc_date)
-        utc_offset = localtime.utcoffset()
-        adjusted_time = utc_date + time_adjust
-        date_data = (adjusted_time, utc_offset)
-        dates.append(date_data)
-
-    return dates
+# # return a date range including UTC offset for each date
+# def date_range(start_date=start_date, end_date=end_date, time_adjust=0):
+#
+#     if not type(time_adjust) == timedelta:
+#         time_adjust = timedelta(hours=time_adjust)
+#
+#     p_dates = pandas.date_range(start=start_date, end=end_date).tolist()
+#     dates = []
+#
+#     for utc_date in p_dates:
+#         utc_date = utc_date.to_pydatetime()
+#         local = pytz.timezone(timezone)
+#         localtime = local.localize(utc_date)
+#         utc_offset = localtime.utcoffset()
+#         adjusted_time = utc_date + time_adjust
+#         date_data = (adjusted_time, utc_offset)
+#         dates.append(date_data)
+#
+#     return dates
 
 
 def moon_phases(dates=date_range()):
@@ -124,10 +124,10 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
         sun_pos, moon_pos = state
         if sun_pos and moon_pos:
             # return chr(219)
-            return (255,255,255)
+            return (229, 226, 172)
         elif sun_pos and not moon_pos:
             # return chr(178)
-            return (255,255,0)
+            return (244, 235, 66)
         elif not sun_pos and moon_pos:
             # return chr(176)
             return (0,0,102)
@@ -188,7 +188,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
             # length of string to add to to_print
             length = int(round(length.total_seconds()/day_length*print_length, 0))
             # to_print += c_chr*length
-            draw.rectangle((length_count, 0, length, 20), c_chr)
+            draw.rectangle((length_count, 0, length+length_count, 20), c_chr)
 
             # apply next variables to current variables to prepare for next iteration
             c_state = n_state
@@ -198,8 +198,9 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
 
         # finalise to_print and print it
         # to_print += c_chr*(print_length-len(to_print))+" >> "+str(d.date())
+        draw.rectangle((length_count, 0, print_length, 20), c_chr)
         image.save(path)
-        output.write('<img src="images\{}">'.format(filename))
+        output.write('<img src="images\{}"><br/>'.format(filename))
         # print to_print
 
 
