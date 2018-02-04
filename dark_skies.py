@@ -7,6 +7,7 @@ from datetime import timedelta
 import pytz
 from PIL import Image, ImageDraw
 from os.path import join
+import math
 
 # location parameters
 name = "Albury"
@@ -45,7 +46,7 @@ end_date = datetime(2018,8,31)
 #     return dates
 
 
-def moon_phases(dates=date_range()):
+def moon_phases(dates):
 
     # define location parameters
     observer = ephem.Observer()
@@ -70,14 +71,17 @@ def moon_phases(dates=date_range()):
         print "{} Next rising: {} {} {}%".format(day, next_rising, phase, int(round(moon.phase)))
 
 
-def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon=0):
+def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
 
     output = open('page.html', 'w')
 
-    # get the date range
-    dates = date_range(start_date, end_date, time_adjust)
-    # establish bodies
-    bodies = { 'sun': ephem.Sun(), 'moon': ephem.Moon() }
+    calendar = ds_calendar.Calendar(start_date, end_date, time_adjust, observer, timezone)
+    calendar.build_range()
+    caelndar.compute_sun()
+    # # get the date range
+    # dates = date_range(start_date, end_date, time_adjust)
+    # # establish bodies
+    # bodies = { 'sun': ephem.Sun(), 'moon': ephem.Moon() }
 
     # # define location parameters
     # observer = ephem.Observer()
@@ -86,68 +90,89 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
     # observer.lon = str(lon)
 
     # use the list of keys (dates) so we can call the transit_details items in order
-    dates_order = [ date[0] for date in dates ]
+    # dates_order = [ date[0] for date in dates ]
     # create transit_details structure and fill with what we know
-    transit_details = { date: [utc_offset, {'sun': None, 'moon': None }, []] for date, utc_offset in dates }
+    # transit_details = { date: [utc_offset, {'sun': None, 'moon': None }, []] for date, utc_offset in dates }
 
-    for d in dates_order:
-        for body in bodies:
-
-            # get the next rise & set times
-            rising_local, setting_local = rise_and_set(bodies[body], d, transit_details[d][0])
-            # current date +1 day
-            d_next = d + timedelta(days=1)
-
-            # check whether body is above the horizon at start of day
-            start_above = above_horizon(bodies[body], d, transit_details[d][0])
-            transit_details[d][1][body] = start_above
-
-            # figure out which day our event falls within and apply it to the corresponding transit_details value
-            # rising
-            if d <= rising_local < d_next:
-                transit_details[d][2].append([rising_local, True, bodies[body].name])
-            elif d_next in dates_order:
-                transit_details[d_next][2].append([rising_local, True, bodies[body].name])
-
-            # setting
-            if d <= setting_local < d_next:
-                transit_details[d][2].append([setting_local, False, bodies[body].name])
-            elif d_next in dates_order:
-                transit_details[d_next][2].append([setting_local, False, bodies[body].name])
+    # for d in dates_order:
+    #     for body in bodies:
+    #
+    #         # get the next rise & set times
+    #         rising_local, setting_local = rise_and_set(bodies[body], d, transit_details[d][0])
+    #         # current date +1 day
+    #         d_next = d + timedelta(days=1)
+    #
+    #         # check whether body is above the horizon at start of day
+    #         start_above = above_horizon(bodies[body], d, transit_details[d][0])
+    #         transit_details[d][1][body] = start_above
+    #
+    #         # figure out which day our event falls within and apply it to the corresponding transit_details value
+    #         # rising
+    #         if d <= rising_local < d_next:
+    #             transit_details[d][2].append([rising_local, True, bodies[body].name])
+    #         elif d_next in dates_order:
+    #             transit_details[d_next][2].append([rising_local, True, bodies[body].name])
+    #
+    #         # setting
+    #         if d <= setting_local < d_next:
+    #             transit_details[d][2].append([setting_local, False, bodies[body].name])
+    #         elif d_next in dates_order:
+    #             transit_details[d_next][2].append([setting_local, False, bodies[body].name])
 
     # order the dates within each transit_details entry
-    for t in transit_details:
-        transit_details[t][2].sort()
+    # for t in transit_details:
+    #     transit_details[t][2].sort()
 
-    # determine which character to return to symbolise current sun & moon position
-    def return_chr(state):
-        sun_pos, moon_pos = state
-        if sun_pos and moon_pos:
-            # return chr(219)
-            return (229, 226, 172)
-        elif sun_pos and not moon_pos:
-            # return chr(178)
-            return (244, 235, 66)
-        elif not sun_pos and moon_pos:
-            # return chr(176)
-            return (0,0,102)
-        else:
-            # return " "
-            return (0,0,0)
-
-    # change the current state based on what's above the horizon
-    def change_state(current_state, change, body):
-        if body == 'Sun':
-            current_state[0] = change
-            return current_state
-        else:
-            current_state[1] = change
-            return current_state
+    # # determine which character to return to symbolise current sun & moon position
+    # def return_chr(state):
+    #     sun_pos, moon_pos = state
+    #     if sun_pos and moon_pos:
+    #         # return chr(219)
+    #         return (229, 226, 172)
+    #     elif sun_pos and not moon_pos:
+    #         # return chr(178)
+    #         return (244, 235, 66)
+    #     elif not sun_pos and moon_pos:
+    #         # return chr(176)
+    #         return (0,0,102)
+    #     else:
+    #         # return " "
+    #         return (0,0,0)
+    #
+    # # change the current state based on what's above the horizon
+    # def change_state(current_state, change, body):
+    #     if body == 'Sun':
+    #         current_state[0] = change
+    #         return current_state
+    #     else:
+    #         current_state[1] = change
+    #         return current_state
 
     # print variables
     day_length = 86400
     print_length = 900
-    #
+
+    def colours(alt, prev_alt):
+        day = (245, 245, 245)
+        civil = (200, 200, 200)
+        nautical = (150, 150, 150)
+        astronomical = (75, 75, 75)
+        night = (0, 0, 0)
+        # day
+        # civil twilight
+        if 0 > alt > 6:
+            return (200, 200, 200)
+        # nautical twilight
+        elif 6 > alt > 12:
+            return (150, 150, 150)
+        # astronomical twilight
+        elif 12 > alt > 18:
+            return (75, 75, 75)
+        # night
+        else:
+            return (0, 0, 0)
+
+
     # # header details
     # header = "Dark Skies: {} >> {}".format(dates_order[0].date(), dates_order[-1].date())
     # header = "-"*(print_length/2-18)+header+"-"*(print_length/2-18)
@@ -160,16 +185,16 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12, horizon
     # print time_markers
 
     # go through each date
-    for d in dates_order:
+    for date in calendar.dates:
         # to_print = ""
-        filename = str(d.date())+'.png'
-        path = join('images', str(d.date())+'.png')
+        filename = str(date.date)+'.png'
+        path = join('images', filename)
         image = Image.new('RGB', (900, 20), (255,255,255))
         draw = ImageDraw.Draw(image)
 
         # get current sun & moon positions
-        sun_pos = transit_details[d][1]['sun']
-        moon_pos = transit_details[d][1]['moon']
+        sun_pos = date.sun_start
+        # moon_pos = transit_details[d][1]['moon']
 
         # current state and time
         c_state = [sun_pos, moon_pos]
