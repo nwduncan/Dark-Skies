@@ -158,6 +158,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         nautical = (150, 150, 150)
         astronomical = (75, 75, 75)
         night = (0, 0, 0)
+        twilight = [day, civil, nautical, astronomical, night]
         # day
         # civil twilight
         if 0 > alt > 6:
@@ -192,9 +193,25 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         image = Image.new('RGB', (900, 20), (255,255,255))
         draw = ImageDraw.Draw(image)
 
+        # moon_pos = transit_details[d][1]['moon']
+
+        day = (245, 245, 245)
+        civil = (200, 200, 200)
+        nautical = (150, 150, 150)
+        astronomical = (75, 75, 75)
+        night = (0, 0, 0)
+        twilight = [day, civil, nautical, astronomical, night]
+
         # get current sun & moon positions
         sun_pos = date.sun_start
-        # moon_pos = transit_details[d][1]['moon']
+
+        twilight_rgb = {'day': None,
+                        'civil': None,
+                        'nautical': None,
+                        'astronomical':None ,
+                        'night': None }
+
+
 
         # current state and time
         c_state = [sun_pos, moon_pos]
