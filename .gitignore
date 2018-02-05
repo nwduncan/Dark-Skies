@@ -1,5 +1,6 @@
 *.pyc
 *.html
+*.psd
 
 # directories
 venv/

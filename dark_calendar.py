@@ -21,6 +21,7 @@ class Calendar(object):
     def build_range(self):
         p_dates = pandas.date_range(self.start_date, self.end_date).tolist()
         self.dates = []
+
         for utc_date in p_dates:
             # convert pandas date to datetime
             utc_date = utc_date.to_pydatetime()
@@ -37,11 +38,11 @@ class Calendar(object):
 
     def compute_sun(self):
         # twilghit calcs use centre of sun. day calcs uses upper edge
-        day = (245, 245, 245)
-        civil = (200, 200, 200)
-        nautical = (150, 150, 150)
-        astronomical = (75, 75, 75)
-        night = (0, 0, 0)
+        day = 'day'
+        civil = 'civil'
+        nautical = 'nautical'
+        astronomical = 'astronomical'
+        night = 'night'
         twilight = { 'day':          (0, False, (day, civil)),
                      'civil':        (-6, True, (civil, nautical)),
                      'nautical':     (-12, True, (nautical, astronomical)),
@@ -55,44 +56,35 @@ class Calendar(object):
                 rising, setting = self.rise_and_set(self.sun, date, str(alt), use_center)
                 date.sun_events.append([rising, alt, rgb[0]])
                 date.sun_events.append([setting, alt, rgb[1]])
+
             date.sun_events.sort()
             self.observer.horizon = '0'
             date.sun_start = self.altitude(self.sun, date)
 
-        # event and print settings
-        twilight_times = [day, civil, nautical, astronomical, night]
-        # print variables
-        day_length = 86400
-        print_length = 900
-
-
-        # return an index corresponding to the sun's start altitude
-        # for use with the twilight_times list
-        def sun_start(self, sun_alt):
-            if sun_alt > 0:
-                return 0
-            elif 0 > sun_alt > -6:
-                return 1
-            elif -6 > sun_alt > -12:
-                return 2
-            elif -12 > sun_alt > -18:
-                return 3
+            if date.sun_start >= 0:
+                start_phase = 'day'
+            elif 0 > date.sun_start >= -6:
+                start_phase = 'civil'
+            elif -6 > date.sun_start >= -12:
+                start_phase = 'nautical'
+            elif -12 > date.sun_start >= -18:
+                start_phase = 'astronomical'
             else:
-                return 4
+                start_phase = 'night'
 
-        for date in self.dates:
-            start = date.date
-            start_alt = date.sun_start
-            idx = sun_start(start_alt)
-            sun_draw = twilight_times[idx]
+            # date.sun_events.insert(0, [date.date, date.sun_start, start_phase])
+
+            start_time = date.date
+            count = 0
             for event in date.sun_events:
-                seconds = (event[0]-start).total_seconds()
-                date.sun_instructions.append([seconds, sun_draw])
-                end_alt = event[1]
-                if start_alt > end_alt:
-                    idx = idx+1 if idx+1 < len(twilight_times) else 0
+                seconds = (event[0]-start_time).total_seconds()
+                count += seconds
+                date.sun_instructions.append([seconds, start_phase])
+                start_time = event[0]
+                start_phase = event[2]
 
-
+            time_left = 86400 - count
+            date.sun_instructions.append([time_left, start_phase])
 
 
     def compute_moon(self):

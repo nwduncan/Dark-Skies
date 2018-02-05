@@ -1,13 +1,13 @@
 # a basic program that determines the best nights for stargazing based on the
 # moon's phase and rise/set times
 import ephem
-import pandas
 from datetime import datetime
 from datetime import timedelta
-import pytz
 from PIL import Image, ImageDraw
 from os.path import join
 import math
+import dark_calendar
+from random import randint
 
 # location parameters
 name = "Albury"
@@ -23,28 +23,6 @@ observer.lat = str(lat)
 observer.lon = str(lon)
 start_date = datetime(2018,8,1)
 end_date = datetime(2018,8,31)
-
-
-# # return a date range including UTC offset for each date
-# def date_range(start_date=start_date, end_date=end_date, time_adjust=0):
-#
-#     if not type(time_adjust) == timedelta:
-#         time_adjust = timedelta(hours=time_adjust)
-#
-#     p_dates = pandas.date_range(start=start_date, end=end_date).tolist()
-#     dates = []
-#
-#     for utc_date in p_dates:
-#         utc_date = utc_date.to_pydatetime()
-#         local = pytz.timezone(timezone)
-#         localtime = local.localize(utc_date)
-#         utc_offset = localtime.utcoffset()
-#         adjusted_time = utc_date + time_adjust
-#         date_data = (adjusted_time, utc_offset)
-#         dates.append(date_data)
-#
-#     return dates
-
 
 def moon_phases(dates):
 
@@ -73,214 +51,62 @@ def moon_phases(dates):
 
 def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
 
+    if type(time_adjust) != timedelta:
+        time_adjust = timedelta(hours=time_adjust)
+
     output = open('page.html', 'w')
 
-    calendar = ds_calendar.Calendar(start_date, end_date, time_adjust, observer, timezone)
+    # build our date objects
+    calendar = dark_calendar.Calendar(start_date, end_date, time_adjust, observer, timezone)
     calendar.build_range()
-    caelndar.compute_sun()
-    # # get the date range
-    # dates = date_range(start_date, end_date, time_adjust)
-    # # establish bodies
-    # bodies = { 'sun': ephem.Sun(), 'moon': ephem.Moon() }
+    calendar.compute_sun()
 
-    # # define location parameters
-    # observer = ephem.Observer()
-    # observer.name = name
-    # observer.lat = str(lat)
-    # observer.lon = str(lon)
+    # image variables
+    img_width = 900
+    img_height = 20
 
-    # use the list of keys (dates) so we can call the transit_details items in order
-    # dates_order = [ date[0] for date in dates ]
-    # create transit_details structure and fill with what we know
-    # transit_details = { date: [utc_offset, {'sun': None, 'moon': None }, []] for date, utc_offset in dates }
+    twilight_rgb = {'day': (255, 240, 231),
+                    'civil': (252, 167, 123),
+                    'nautical': (196, 111, 76),
+                    'astronomical':(113, 61, 51) ,
+                    'night': (24, 9, 29) }
 
-    # for d in dates_order:
-    #     for body in bodies:
-    #
-    #         # get the next rise & set times
-    #         rising_local, setting_local = rise_and_set(bodies[body], d, transit_details[d][0])
-    #         # current date +1 day
-    #         d_next = d + timedelta(days=1)
-    #
-    #         # check whether body is above the horizon at start of day
-    #         start_above = above_horizon(bodies[body], d, transit_details[d][0])
-    #         transit_details[d][1][body] = start_above
-    #
-    #         # figure out which day our event falls within and apply it to the corresponding transit_details value
-    #         # rising
-    #         if d <= rising_local < d_next:
-    #             transit_details[d][2].append([rising_local, True, bodies[body].name])
-    #         elif d_next in dates_order:
-    #             transit_details[d_next][2].append([rising_local, True, bodies[body].name])
-    #
-    #         # setting
-    #         if d <= setting_local < d_next:
-    #             transit_details[d][2].append([setting_local, False, bodies[body].name])
-    #         elif d_next in dates_order:
-    #             transit_details[d_next][2].append([setting_local, False, bodies[body].name])
-
-    # order the dates within each transit_details entry
-    # for t in transit_details:
-    #     transit_details[t][2].sort()
-
-    # # determine which character to return to symbolise current sun & moon position
-    # def return_chr(state):
-    #     sun_pos, moon_pos = state
-    #     if sun_pos and moon_pos:
-    #         # return chr(219)
-    #         return (229, 226, 172)
-    #     elif sun_pos and not moon_pos:
-    #         # return chr(178)
-    #         return (244, 235, 66)
-    #     elif not sun_pos and moon_pos:
-    #         # return chr(176)
-    #         return (0,0,102)
-    #     else:
-    #         # return " "
-    #         return (0,0,0)
-    #
-    # # change the current state based on what's above the horizon
-    # def change_state(current_state, change, body):
-    #     if body == 'Sun':
-    #         current_state[0] = change
-    #         return current_state
-    #     else:
-    #         current_state[1] = change
-    #         return current_state
-
-    # print variables
-    day_length = 86400
-    print_length = 900
-
-    def colours(alt, prev_alt):
-        day = (245, 245, 245)
-        civil = (200, 200, 200)
-        nautical = (150, 150, 150)
-        astronomical = (75, 75, 75)
-        night = (0, 0, 0)
-        twilight = [day, civil, nautical, astronomical, night]
-        # day
-        # civil twilight
-        if 0 > alt > 6:
-            return (200, 200, 200)
-        # nautical twilight
-        elif 6 > alt > 12:
-            return (150, 150, 150)
-        # astronomical twilight
-        elif 12 > alt > 18:
-            return (75, 75, 75)
-        # night
-        else:
-            return (0, 0, 0)
+    def stars(img_width, img_height):
+        transp_limits = (10, 100)
+        stars_per_pixel = 0.005
+        pixels = img_height * img_width
+        overlay = Image.new('RGBA', image.size, (0,0,0,0))
+        draw_overlay = ImageDraw.Draw(overlay)
+        for x in range(0, int(pixels*stars_per_pixel)):
+            rand_x = randint(0, img_width-1)
+            rand_y = randint(0, img_height-1)
+            draw_overlay.rectangle((rand_x, rand_y, rand_x, rand_y), (255,255,255,randint(transp_limits[0], transp_limits[1])))
+        return overlay
 
 
-    # # header details
-    # header = "Dark Skies: {} >> {}".format(dates_order[0].date(), dates_order[-1].date())
-    # header = "-"*(print_length/2-18)+header+"-"*(print_length/2-18)
-    # print header
-    # # time markers
-    # times = [ str(x) if len(str(x)) == 2 else '0'+str(x) for x in range(12,25)+range(1,12) ]
-    # time_markers = ""
-    # for t in times:
-    #     time_markers += "|"+t+" "*((print_length/24)-3)
-    # print time_markers
-
-    # go through each date
     for date in calendar.dates:
-        # to_print = ""
-        filename = str(date.date)+'.png'
+        filename = str(date.date.date())+'.png'
         path = join('images', filename)
-        image = Image.new('RGB', (900, 20), (255,255,255))
+        image = Image.new('RGB', (img_width, img_height), (255,255,255))
+        image = image.convert('RGBA')
         draw = ImageDraw.Draw(image)
 
-        # moon_pos = transit_details[d][1]['moon']
-
-        day = (245, 245, 245)
-        civil = (200, 200, 200)
-        nautical = (150, 150, 150)
-        astronomical = (75, 75, 75)
-        night = (0, 0, 0)
-        twilight = [day, civil, nautical, astronomical, night]
-
-        # get current sun & moon positions
-        sun_pos = date.sun_start
-
-        twilight_rgb = {'day': None,
-                        'civil': None,
-                        'nautical': None,
-                        'astronomical':None ,
-                        'night': None }
-
-
-
-        # current state and time
-        c_state = [sun_pos, moon_pos]
-        c_chr = return_chr(c_state)
-        c_time = d
         length_count = 0
-
-        # iterate over events for the day
-        for event in transit_details[d][2]:
-            # next event time
-            n_time = event[0]
-            # next event state
-            n_state = change_state(c_state, event[1], event[2])
-            # time between previous event and next event
-            length = n_time - c_time
-            # length of string to add to to_print
-            length = int(round(length.total_seconds()/day_length*print_length, 0))
-            # to_print += c_chr*length
-            draw.rectangle((length_count, 0, length+length_count, 20), c_chr)
-
-            # apply next variables to current variables to prepare for next iteration
-            c_state = n_state
-            c_chr = return_chr(c_state)
-            c_time = n_time
+        for instr in date.sun_instructions:
+            length = int(round(instr[0]/86400*img_width, 0))
+            colour = twilight_rgb[instr[1]]
+            draw.rectangle((length_count, 0, length+length_count, img_height), colour)
             length_count += length
 
-        # finalise to_print and print it
-        # to_print += c_chr*(print_length-len(to_print))+" >> "+str(d.date())
-        draw.rectangle((length_count, 0, print_length, 20), c_chr)
+        overlay = stars(img_width, img_height)
+        image = Image.alpha_composite(image, overlay)
+        overlay = Image.new('RGBA', image.size, (0,0,0,0))
+        draw_temp = ImageDraw.Draw(overlay)
+        draw_temp.rectangle((0, img_height-1, img_width, img_height), fill=(255,255,255,25))
+        image = Image.alpha_composite(image, overlay)
         image.save(path)
         output.write('<img src="images\{}"><br/>'.format(filename))
         # print to_print
-
-
-# return the next rise and set times
-def rise_and_set(body, date, utc_offset):
-
-    # convert search time (at local) to UTC time
-    observer.date = date - utc_offset
-
-    # event type
-    rising = observer.next_rising(body, use_center=False)
-    setting = observer.next_setting(body, use_center=False)
-
-    # utc time of event
-    rising_utc = ephem.Date(rising).datetime()
-    setting_utc = ephem.Date(setting).datetime()
-
-    # convert to local time (and remove any sub-second information)
-    rising_local = rising_utc + utc_offset
-    rising_local = datetime(rising_local.year, rising_local.month, rising_local.day, rising_local.hour, rising_local.minute)
-    setting_local = setting_utc + utc_offset
-    setting_local = datetime(setting_local.year, setting_local.month, setting_local.day, setting_local.hour, setting_local.minute)
-
-    return rising_local, setting_local
-
-# check to see whether a body is above the horizon
-def above_horizon(body, date, utc_offset):
-
-    observer.date = date - utc_offset
-    body.compute(observer)
-
-    if body.alt > 0:
-        return True
-
-    return False
-
-
-
 
 ## notes
 # refer to https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for possible tz variables
