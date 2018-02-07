@@ -6,6 +6,24 @@ import pytz
 from math import degrees
 
 
+def testing():
+    name = "Albury"
+    lat = -36.07
+    lon = 146.91
+    timezone = "Australia/Sydney"
+    observer = ephem.Observer()
+    observer.name = name
+    observer.lat = str(lat)
+    observer.lon = str(lon)
+    start_date = datetime(2018,1,1)
+    end_date = datetime(2018,12,31)
+    test_obj = Calendar(start_date, end_date, timedelta(hours=12), observer, timezone)
+    test_obj.build_range()
+    test_obj.compute_sun()
+    test_obj.compute_moon()
+    return test_obj
+
+
 class Calendar(object):
     def __init__(self, start_date, end_date, time_adjust, observer, timezone):
         self.start_date = start_date
@@ -72,8 +90,6 @@ class Calendar(object):
             else:
                 start_phase = 'night'
 
-            # date.sun_events.insert(0, [date.date, date.sun_start, start_phase])
-
             start_time = date.date
             count = 0
             for event in date.sun_events:
@@ -88,9 +104,39 @@ class Calendar(object):
 
 
     def compute_moon(self):
-        return
+        for date in self.dates:
+            # moon phase & illumination
+            self.observer.date = date.date - date.utc_offset
+            self.moon.compute(self.observer)
+            date.moon_illum = self.moon.moon_phase
 
-    def rise_and_set(self, body, date, horizon, use_center):
+            # moon rise and set
+            rising, setting = self.rise_and_set(self.moon, date)
+            plus_24 = date.date + timedelta(hours=24)
+            if date.date <= rising < plus_24:
+                date.moon_events.append([rising, 'rising'])
+            if date.date <= setting < plus_24:
+                date.moon_events.append([setting, 'setting'])
+            date.moon_events.sort()
+
+            # moon draw instructions
+            count = 0
+            start_time = date.date
+            date.moon_start = self.altitude(self.moon, date)
+            moon_status = True if date.moon_start > 0 else False
+            for event in date.moon_events:
+                seconds = (event[0]-start_time).total_seconds()
+                count += seconds
+                date.moon_instructions.append([seconds, moon_status])
+                start_time = event[0]
+                moon_status = not moon_status
+
+            time_left = 86400 - count
+            date.moon_instructions.append([time_left, moon_status])
+
+
+
+    def rise_and_set(self, body, date, horizon='0', use_center=False):
         # convert search time (at local) to UTC time
         self.observer.date = date.date - date.utc_offset
         self.observer.horizon = horizon
@@ -115,8 +161,8 @@ class Calendar(object):
 
     def altitude(self, body, date):
         self.observer.date = date.date - date.utc_offset
-        self.sun.compute(self.observer)
-        return degrees(self.sun.alt)
+        body.compute(self.observer)
+        return degrees(body.alt)
 
 
     def truncate_date(self, date):
@@ -128,39 +174,10 @@ class Calendar(object):
             self.date = date
             self.utc_offset = utc_offset
             self.sun_start = None
-            self.moon_start = None
-            self.moon_phase = None
             self.sun_events = []
             self.sun_instructions = []
+            self.moon_start = None
+            self.moon_phase = None
+            self.moon_illum = None
             self.moon_events = []
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
+            self.moon_instructions = []

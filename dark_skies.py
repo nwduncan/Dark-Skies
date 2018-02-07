@@ -21,8 +21,8 @@ observer = ephem.Observer()
 observer.name = name
 observer.lat = str(lat)
 observer.lon = str(lon)
-start_date = datetime(2018,8,1)
-end_date = datetime(2018,8,31)
+start_date = datetime(2018,1,1)
+end_date = datetime(2018,12,31)
 
 def moon_phases(dates):
 
@@ -60,6 +60,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     calendar = dark_calendar.Calendar(start_date, end_date, time_adjust, observer, timezone)
     calendar.build_range()
     calendar.compute_sun()
+    calendar.compute_moon()
 
     # image variables
     img_width = 900
@@ -71,32 +72,58 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
                     'astronomical':(113, 61, 51) ,
                     'night': (24, 9, 29) }
 
+    # twilight_rgb = {'day': (255, 208, 180),
+    #                 'civil': (252, 167, 123),
+    #                 'nautical': (196, 111, 76),
+    #                 'astronomical':(113, 61, 51) ,
+    #                 'night': (24, 9, 29) }
+
+    # twilight_rgb = {'day': (216, 229, 248),
+    #                 'civil': (165, 177, 193),
+    #                 'nautical': (115, 126, 139),
+    #                 'astronomical':(65, 75, 85) ,
+    #                 'night': (17, 27, 34) }
+
+
     def stars(img_width, img_height):
         transp_limits = (10, 100)
         stars_per_pixel = 0.005
         pixels = img_height * img_width
-        overlay = Image.new('RGBA', image.size, (0,0,0,0))
+        overlay = Image.new('RGBA', (img_width, img_height), (0, 0, 0, 0))
         draw_overlay = ImageDraw.Draw(overlay)
         for x in range(0, int(pixels*stars_per_pixel)):
             rand_x = randint(0, img_width-1)
             rand_y = randint(0, img_height-1)
-            draw_overlay.rectangle((rand_x, rand_y, rand_x, rand_y), (255,255,255,randint(transp_limits[0], transp_limits[1])))
+            draw_overlay.rectangle((rand_x, rand_y, rand_x, rand_y), (255, 255, 255, randint(transp_limits[0], transp_limits[1])))
         return overlay
 
 
     for date in calendar.dates:
+        # master image
         filename = str(date.date.date())+'.png'
         path = join('images', filename)
-        image = Image.new('RGB', (img_width, img_height), (255,255,255))
+        image = Image.new('RGB', (img_width, img_height), (255, 255, 255))
         image = image.convert('RGBA')
         draw = ImageDraw.Draw(image)
 
+        # draw sun events over master image
         length_count = 0
         for instr in date.sun_instructions:
             length = int(round(instr[0]/86400*img_width, 0))
             colour = twilight_rgb[instr[1]]
             draw.rectangle((length_count, 0, length+length_count, img_height), colour)
             length_count += length
+
+        # create moon overlay
+        length_count = 0
+        moon = Image.new('RGBA', (img_width, img_height), (0, 0, 0, 0))
+        draw_moon = ImageDraw.Draw(moon)
+        for instr in date.moon_instructions:
+            length = int(round(instr[0]/86400*img_width, 0))
+            opacity = int(round(80*date.moon_illum, 0)) if instr[1] else 0
+            draw_moon.rectangle((length_count, 0, length+length_count, img_height), (255, 255, 255, opacity))
+            length_count += length
+        image = Image.alpha_composite(image, moon)
 
         overlay = stars(img_width, img_height)
         image = Image.alpha_composite(image, overlay)
