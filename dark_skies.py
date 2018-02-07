@@ -66,17 +66,17 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     img_width = 900
     img_height = 20
 
-    twilight_rgb = {'day': (255, 240, 231),
-                    'civil': (252, 167, 123),
-                    'nautical': (196, 111, 76),
-                    'astronomical':(113, 61, 51) ,
-                    'night': (24, 9, 29) }
-
-    # twilight_rgb = {'day': (255, 208, 180),
+    # twilight_rgb = {'day': (255, 240, 231),
     #                 'civil': (252, 167, 123),
     #                 'nautical': (196, 111, 76),
     #                 'astronomical':(113, 61, 51) ,
     #                 'night': (24, 9, 29) }
+
+    twilight_rgb = {'day': (204, 39, 73),
+                    'civil': (155, 45, 71),
+                    'nautical': (101, 51, 76),
+                    'astronomical':(51, 56, 76) ,
+                    'night': (2, 61, 79) }
 
     # twilight_rgb = {'day': (216, 229, 248),
     #                 'civil': (165, 177, 193),
@@ -120,7 +120,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         draw_moon = ImageDraw.Draw(moon)
         for instr in date.moon_instructions:
             length = int(round(instr[0]/86400*img_width, 0))
-            opacity = int(round(80*date.moon_illum, 0)) if instr[1] else 0
+            opacity = int(round((80*date.moon_illum)+20, 0)) if instr[1] else 0
             draw_moon.rectangle((length_count, 0, length+length_count, img_height), (255, 255, 255, opacity))
             length_count += length
         image = Image.alpha_composite(image, moon)
