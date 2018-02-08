@@ -9,11 +9,16 @@ import math
 import dark_calendar
 from random import randint
 
-# location parameters
+# # location parameters
 name = "Albury"
 lat = -36.07
 lon = 146.91
 timezone = "Australia/Sydney"
+# location parameters
+# name = "Albury"
+# lat = 0
+# lon = 0
+# timezone = "America/Anchorage"
 # elev = 160
 
 # observer initialisation
@@ -72,17 +77,17 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     #                 'astronomical':(113, 61, 51) ,
     #                 'night': (24, 9, 29) }
 
-    twilight_rgb = {'day': (204, 39, 73),
-                    'civil': (155, 45, 71),
-                    'nautical': (101, 51, 76),
-                    'astronomical':(51, 56, 76) ,
-                    'night': (2, 61, 79) }
+    # twilight_rgb = {'day': (204, 39, 73),
+    #                 'civil': (155, 45, 71),
+    #                 'nautical': (101, 51, 76),
+    #                 'astronomical':(51, 56, 76) ,
+    #                 'night': (2, 61, 79) }
 
-    # twilight_rgb = {'day': (216, 229, 248),
-    #                 'civil': (165, 177, 193),
-    #                 'nautical': (115, 126, 139),
-    #                 'astronomical':(65, 75, 85) ,
-    #                 'night': (17, 27, 34) }
+    twilight_rgb = {'day': (216, 229, 248),
+                    'civil': (165, 177, 193),
+                    'nautical': (115, 126, 139),
+                    'astronomical':(65, 75, 85) ,
+                    'night': (17, 27, 34) }
 
 
     def stars(img_width, img_height):
@@ -118,6 +123,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         length_count = 0
         moon = Image.new('RGBA', (img_width, img_height), (0, 0, 0, 0))
         draw_moon = ImageDraw.Draw(moon)
+        # print date.date, date.moon_instructions, [str(d)+" "+a for d, a in date.moon_events ]
         for instr in date.moon_instructions:
             length = int(round(instr[0]/86400*img_width, 0))
             opacity = int(round((80*date.moon_illum)+20, 0)) if instr[1] else 0

@@ -72,8 +72,10 @@ class Calendar(object):
                 use_center = twilight[phase][1]
                 rgb = twilight[phase][2]
                 rising, setting = self.rise_and_set(self.sun, date, str(alt), use_center)
-                date.sun_events.append([rising, alt, rgb[0]])
-                date.sun_events.append([setting, alt, rgb[1]])
+                if rising:
+                    date.sun_events.append([rising, alt, rgb[0]])
+                if setting:
+                    date.sun_events.append([setting, alt, rgb[1]])
 
             date.sun_events.sort()
             self.observer.horizon = '0'
@@ -111,11 +113,11 @@ class Calendar(object):
             date.moon_illum = self.moon.moon_phase
 
             # moon rise and set
-            rising, setting = self.rise_and_set(self.moon, date)
+            rising, setting = self.rise_and_set(self.moon, date, use_center=True)
             plus_24 = date.date + timedelta(hours=24)
-            if date.date <= rising < plus_24:
+            if rising and date.date <= rising < plus_24:
                 date.moon_events.append([rising, 'rising'])
-            if date.date <= setting < plus_24:
+            if setting and date.date <= setting < plus_24:
                 date.moon_events.append([setting, 'setting'])
             date.moon_events.sort()
 
@@ -141,22 +143,41 @@ class Calendar(object):
         self.observer.date = date.date - date.utc_offset
         self.observer.horizon = horizon
 
-        # event type
+        # rising
         # consider using previous rise/set times as well
-        rising = self.observer.next_rising(body, use_center=use_center)
-        setting = self.observer.next_setting(body, use_center=use_center)
+        try:
+            rising = self.observer.next_rising(body, use_center=use_center)
+            # utc time of event
+            rising_utc = ephem.Date(rising).datetime()
+            # convert to local time (and remove any sub-minute information)
+            rising_local = rising_utc + date.utc_offset
+            rising_local = self.truncate_date(rising_local)
 
-        # utc time of event
-        rising_utc = ephem.Date(rising).datetime()
-        setting_utc = ephem.Date(setting).datetime()
+        except ephem.CircumpolarError:
+            rising_local = False
 
-        # convert to local time (and remove any sub-minute information)
-        rising_local = rising_utc + date.utc_offset
-        rising_local = self.truncate_date(rising_local)
-        setting_local = setting_utc + date.utc_offset
-        setting_local = self.truncate_date(setting_local)
+        # setting
+        # consider using previous rise/set times as well
+        try:
+            setting = self.observer.next_setting(body, use_center=use_center)
+            # utc time of event
+            setting_utc = ephem.Date(setting).datetime()
+            # convert to local time (and remove any sub-minute information)
+            setting_local = setting_utc + date.utc_offset
+            setting_local = self.truncate_date(setting_local)
+        except ephem.CircumpolarError:
+            setting_local = False
+
+        # if type(body) == ephem.Moon and date.date == datetime(2018,12,7,12):
+        #     print date.date, rising_local, self.altitude2(self.moon, date, rising_local)
+        #     print date.date, setting_local, self.altitude2(self.moon, date, setting_local)
 
         return rising_local, setting_local
+
+    # def altitude2(self, body, date, date2):
+    #     self.observer.date = date2 - date.utc_offset
+    #     body.compute(self.observer)
+    #     return degrees(body.alt)
 
 
     def altitude(self, body, date):
