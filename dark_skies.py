@@ -77,17 +77,17 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     #                 'astronomical':(113, 61, 51) ,
     #                 'night': (24, 9, 29) }
 
-    # twilight_rgb = {'day': (204, 39, 73),
-    #                 'civil': (155, 45, 71),
-    #                 'nautical': (101, 51, 76),
-    #                 'astronomical':(51, 56, 76) ,
-    #                 'night': (2, 61, 79) }
+    twilight_rgb = {'day': (204, 39, 73),
+                    'civil': (155, 45, 71),
+                    'nautical': (101, 51, 76),
+                    'astronomical':(51, 56, 76) ,
+                    'night': (2, 61, 79) }
 
-    twilight_rgb = {'day': (216, 229, 248),
-                    'civil': (165, 177, 193),
-                    'nautical': (115, 126, 139),
-                    'astronomical':(65, 75, 85) ,
-                    'night': (17, 27, 34) }
+    # twilight_rgb = {'day': (216, 229, 248),
+    #                 'civil': (165, 177, 193),
+    #                 'nautical': (115, 126, 139),
+    #                 'astronomical':(65, 75, 85) ,
+    #                 'night': (17, 27, 34) }
 
 
     def stars(img_width, img_height):
@@ -138,7 +138,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         draw_temp.rectangle((0, img_height-1, img_width, img_height), fill=(255,255,255,25))
         image = Image.alpha_composite(image, overlay)
         image.save(path)
-        output.write('<img src="images\{}"><br/>'.format(filename))
+        output.write('<img src="images\{}">{} - {}<br/>'.format(filename, date.date.date(), date.moon_phase))
         # print to_print
 
 ## notes

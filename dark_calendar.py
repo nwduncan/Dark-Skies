@@ -112,6 +112,33 @@ class Calendar(object):
             self.moon.compute(self.observer)
             date.moon_illum = self.moon.moon_phase
 
+            # get the next new moon and the previous new moon
+            next_nm = ephem.next_new_moon(self.observer.date)
+            prev_nm = ephem.previous_new_moon(self.observer.date)
+            lunation = (self.observer.date-prev_nm)/(next_nm-prev_nm)
+            lunation = lunation*100
+
+            phase_range = 49.0/3
+
+            if lunation <= 1:
+                date.moon_phase = 'new moon'
+            elif 1 < lunation <= phase_range:
+                date.moon_phase = 'waxing crescent'
+            elif phase_range < lunation <= phase_range*2:
+                date.moon_phase = 'waxing half'
+            elif phase_range*2 < lunation <= (phase_range*3)-0.5:
+                date.moon_phase = 'waxing gibbous'
+            elif (phase_range*3)-0.5 < lunation <= (phase_range*3)+0.5:
+                date.moon_phase = 'full moon'
+            elif (phase_range*3)+0.5 < lunation <= phase_range*4:
+                date.moon_phase = 'waning gibbous'
+            elif phase_range*4 < lunation <= phase_range*5:
+                date.moon_phase = 'waning half'
+            elif phase_range*5 < lunation <= 100:
+                date.moon_phase = 'waning crescent'
+
+            date.moon_phase += " - " + str(round(lunation, 2))
+
             # moon rise and set
             rising, setting = self.rise_and_set(self.moon, date, use_center=True)
             plus_24 = date.date + timedelta(hours=24)
@@ -168,16 +195,7 @@ class Calendar(object):
         except ephem.CircumpolarError:
             setting_local = False
 
-        # if type(body) == ephem.Moon and date.date == datetime(2018,12,7,12):
-        #     print date.date, rising_local, self.altitude2(self.moon, date, rising_local)
-        #     print date.date, setting_local, self.altitude2(self.moon, date, setting_local)
-
         return rising_local, setting_local
-
-    # def altitude2(self, body, date, date2):
-    #     self.observer.date = date2 - date.utc_offset
-    #     body.compute(self.observer)
-    #     return degrees(body.alt)
 
 
     def altitude(self, body, date):
