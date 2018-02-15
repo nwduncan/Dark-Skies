@@ -120,24 +120,26 @@ class Calendar(object):
 
             phase_range = 49.0/3
 
-            if lunation <= 1:
+            if lunation <= 2:
                 date.moon_phase = 'new moon'
-            elif 1 < lunation <= phase_range:
+            elif 2 < lunation <= phase_range:
                 date.moon_phase = 'waxing crescent'
             elif phase_range < lunation <= phase_range*2:
                 date.moon_phase = 'waxing half'
-            elif phase_range*2 < lunation <= (phase_range*3)-0.5:
+            elif phase_range*2 < lunation <= (phase_range*3)-2:
                 date.moon_phase = 'waxing gibbous'
-            elif (phase_range*3)-0.5 < lunation <= (phase_range*3)+0.5:
+            elif (phase_range*3)-2 < lunation <= (phase_range*3)+2:
                 date.moon_phase = 'full moon'
-            elif (phase_range*3)+0.5 < lunation <= phase_range*4:
+            elif (phase_range*3)+2 < lunation <= phase_range*4:
                 date.moon_phase = 'waning gibbous'
             elif phase_range*4 < lunation <= phase_range*5:
                 date.moon_phase = 'waning half'
-            elif phase_range*5 < lunation <= 100:
+            elif phase_range*5 < lunation <= 98:
                 date.moon_phase = 'waning crescent'
+            elif 98 < lunation <= 100:
+                date.moon_phase = 'new moon'
 
-            date.moon_phase += " - " + str(round(lunation, 2))
+            date.moon_phase += " - " + str(round(lunation, 2)) + " - " + str(round(date.moon_illum*100, 1))
 
             # moon rise and set
             rising, setting = self.rise_and_set(self.moon, date, use_center=True)
