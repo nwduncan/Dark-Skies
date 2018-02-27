@@ -1,52 +1,52 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
-    <head>
-        <title>Reusable Form Demo</title>
-       <link rel="stylesheet" media="screen" href ="static/bootstrap.min.css">
-       <link rel="stylesheet" href="static/bootstrap-theme.min.css">
-       <meta name="viewport" content = "width=device-width, initial-scale=1.0">
 
-    </head>
-    <body>
+<head>
+    <title>Reusable Form Demo</title>
+    <link rel="stylesheet" media="screen" href ="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+</head>
 
-<div class="container">
-
-
-  <h2>Dark Skies</h2>
-  <form  action="" method="post" role="form">
-    {{ form.csrf }}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-6">
-                <label for="name">Latitude:</label>
-                <input type="text" class="form-control" id="latitude" name="latitude" placeholder="e.g. 146.91">
-            </div>
-            <div class="col-md-6">
-                <label for="name">Longitude:</label>
-                <input type="text" class="form-control" id="longitude" name="longitude" placeholder="e.g. -36.07">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <label for="name">Start date:</label>
-                <input type="date" class="form-control" id="start" name="start" placeholder="Start date">
-            </div>
-            <div class="col-md-4">
-                <label for="name">End date:</label>
-                <input type="date" class="form-control" id="end" name="end" placeholder="End date">
-            </div>
-            <div class="col-md-4">
-                <label for="email">Day start offset:</label>
-                <input type="date" class="form-control" id="offset" name="offset" placeholder="default 12">
-            </div>
-        </div>
+<body>
+    <div class="container">
         <br>
-        <button type="submit" class="btn btn-success">Submit</button>
-    </div>
+        <h2><p align="center">Dark Skies</p></h2>
+        <form  action="" method="post" role="form">
+            {{ form.csrf }}
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="name">Latitude:</label>
+                        <input type="number" class="form-control" id="latitude" name="latitude" placeholder="e.g. 146.91">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="name">Longitude:</label>
+                        <input type="number" class="form-control" id="longitude" name="longitude" placeholder="e.g. -36.07">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="name">Start date:</label>
+                        <input type="date" class="form-control" id="start" name="start" placeholder="Start date">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="name">End date:</label>
+                        <input type="date" class="form-control" id="end" name="end" placeholder="End date">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="email">Day start offset:</label>
+                        <input type="number" class="form-control" id="offset" name="offset" placeholder="default 12">
+                    </div>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
 
-  </form>
+        </form>
 
-  <br>
+        <br>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
 
