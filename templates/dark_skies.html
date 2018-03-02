@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Reusable Form Demo</title>
+    <title>Dark Skies</title>
     <link rel="stylesheet" media="screen" href ="static/css/bootstrap.css">
     <link rel="stylesheet" href="static/css/bootstrap.css">
     <meta name="viewport" content = "width=device-width, initial-scale=1.0">
@@ -18,26 +18,26 @@
                 <div class="row">
                     <div class="col-md-6">
                         <label for="name">Latitude:</label>
-                        <input type="number" class="form-control" id="latitude" name="latitude" placeholder="e.g. 146.91">
+                        <input type="number" class="form-control" value="{{ formatting['latitude']['value'] }}" id="latitude" name="latitude" placeholder="e.g. 146.91">
                     </div>
                     <div class="col-md-6">
                         <label for="name">Longitude:</label>
-                        <input type="number" class="form-control" id="longitude" name="longitude" placeholder="e.g. -36.07">
+                        <input type="number" class="form-control" value="{{ formatting['longitude']['value'] }}" id="longitude" name="longitude" placeholder="e.g. -36.07">
                     </div>
                 </div>
                 <br>
                 <div class="row">
                     <div class="col-md-4">
                         <label for="name">Start date:</label>
-                        <input type="date" class="form-control" id="start" name="start" placeholder="Start date">
+                        <input type="date" class="form-control" value="{{ formatting['start']['value'] }}" id="start" name="start" placeholder="Start date">
                     </div>
                     <div class="col-md-4">
                         <label for="name">End date:</label>
-                        <input type="date" class="form-control" id="end" name="end" placeholder="End date">
+                        <input type="date" class="form-control" value="{{ formatting['end']['value'] }}" id="end" name="end" placeholder="End date">
                     </div>
                     <div class="col-md-4">
                         <label for="email">Day start offset:</label>
-                        <input type="number" class="form-control" id="offset" name="offset" placeholder="default 12">
+                        <input type="number" class="form-control" value="{{ formatting['offset']['value'] }}" id="offset" name="offset" placeholder="default 12">
                     </div>
                 </div>
                 <br>
@@ -55,7 +55,7 @@
                 <div class="alert alert-info">
                 <strong>Success! </strong> {{ message[1] }}
                 </div>
-                {% include 'test.html' %}
+                {#{% include 'page.html' %}#}
             {% endif %}
 
             {% if "Error" in message[1]: %}
