@@ -18,26 +18,26 @@
                 <div class="row">
                     <div class="col-md-6">
                         <label for="name">Latitude:</label>
-                        <input type="number" class="form-control" value="{{ formatting['latitude']['value'] }}" id="latitude" name="latitude" placeholder="e.g. 146.91">
+                        <input type="number" class="form-control{{ formatting['latitude']['highlight'] }}" value="{{ formatting['latitude']['value'] }}" id="latitude" name="latitude" placeholder="e.g. 146.91">
                     </div>
                     <div class="col-md-6">
                         <label for="name">Longitude:</label>
-                        <input type="number" class="form-control" value="{{ formatting['longitude']['value'] }}" id="longitude" name="longitude" placeholder="e.g. -36.07">
+                        <input type="number" class="form-control{{ formatting['longitude']['highlight'] }}" value="{{ formatting['longitude']['value'] }}" id="longitude" name="longitude" placeholder="e.g. -36.07">
                     </div>
                 </div>
                 <br>
                 <div class="row">
                     <div class="col-md-4">
                         <label for="name">Start date:</label>
-                        <input type="date" class="form-control" value="{{ formatting['start']['value'] }}" id="start" name="start" placeholder="Start date">
+                        <input type="date" class="form-control{{ formatting['start']['highlight'] }}" value="{{ formatting['start']['value'] }}" id="start" name="start" placeholder="Start date">
                     </div>
                     <div class="col-md-4">
                         <label for="name">End date:</label>
-                        <input type="date" class="form-control" value="{{ formatting['end']['value'] }}" id="end" name="end" placeholder="End date">
+                        <input type="date" class="form-control{{ formatting['end']['highlight'] }}" value="{{ formatting['end']['value'] }}" id="end" name="end" placeholder="End date">
                     </div>
                     <div class="col-md-4">
                         <label for="email">Day start offset:</label>
-                        <input type="number" class="form-control" value="{{ formatting['offset']['value'] }}" id="offset" name="offset" placeholder="default 12">
+                        <input type="number" class="form-control{{ formatting['offset']['highlight'] }}" value="{{ formatting['offset']['value'] }}" id="offset" name="offset" placeholder="default 12">
                     </div>
                 </div>
                 <br>
@@ -55,7 +55,11 @@
                 <div class="alert alert-info">
                 <strong>Success! </strong> {{ message[1] }}
                 </div>
-                {#{% include 'page.html' %}#}
+                <p align="center">
+                {% for image in results %}
+                    <img src="static/images/{{ image }}"/><br/>
+                {% endfor %}
+            </p>
             {% endif %}
 
             {% if "Error" in message[1]: %}
