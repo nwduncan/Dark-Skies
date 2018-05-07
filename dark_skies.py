@@ -1,13 +1,14 @@
 # a basic program that determines the best nights for stargazing based on the
 # moon's phase and rise/set times
 import ephem
+import os
 from datetime import datetime
 from datetime import timedelta
 from PIL import Image, ImageDraw
-from os.path import join
 import math
 import dark_calendar
 from random import randint
+import uuid
 
 # # location parameters
 name = "Albury"
@@ -55,6 +56,8 @@ def moon_phases(dates):
 
 
 def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
+    id = str(uuid.uuid4())
+    os.mkdir(os.path.join(os.getcwd(), 'static', 'images', id))
 
     if type(time_adjust) != timedelta:
         time_adjust = timedelta(hours=time_adjust)
@@ -69,14 +72,20 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     calendar.compute_moon()
 
     # image variables
-    img_width = 900
+    img_width = 912
     img_height = 20
 
-    twilight_rgb = {'day': (255, 240, 231),
-                    'civil': (252, 167, 123),
-                    'nautical': (196, 111, 76),
-                    'astronomical':(113, 61, 51) ,
-                    'night': (24, 9, 29) }
+    twilight_rgb = {'day': (142, 203, 238),
+                    'civil': (110, 157, 184),
+                    'nautical': (78, 112, 131),
+                    'astronomical':(46, 66, 78) ,
+                    'night': (6, 6, 6) }
+
+    # twilight_rgb = {'day': (255, 240, 231),
+    #                 'civil': (252, 167, 123),
+    #                 'nautical': (196, 111, 76),
+    #                 'astronomical':(113, 61, 51) ,
+    #                 'night': (24, 9, 29) }
 
     # twilight_rgb = {'day': (204, 39, 73),
     #                 'civil': (155, 45, 71),
@@ -103,11 +112,20 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
             draw_overlay.rectangle((rand_x, rand_y, rand_x, rand_y), (255, 255, 255, randint(transp_limits[0], transp_limits[1])))
         return overlay
 
+    # header image
+    header = Image.new('RGB', (img_width, img_height), (0, 0, 0))
+    for x in range(0,img_width,(img_width/24)):
+        draw_header = ImageDraw.Draw(header)
+        draw_header.rectangle((x, 0, x, img_height), fill=(33,33,33))
+        path = os.path.join('static', 'images', id, 'header.png')
+        header.save(path)
+    output.append(os.path.join(id, 'header.png'))
+
 
     for date in calendar.dates:
         # master image
         filename = str(date.date.date())+'.png'
-        path = join('static', 'images', filename)
+        path = os.path.join('static', 'images', id, filename)
         image = Image.new('RGB', (img_width, img_height), (255, 255, 255))
         image = image.convert('RGBA')
         draw = ImageDraw.Draw(image)
@@ -139,7 +157,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         draw_temp.rectangle((0, img_height-1, img_width, img_height), fill=(255,255,255,25))
         image = Image.alpha_composite(image, overlay)
         image.save(path)
-        output.append(filename)
+        output.append(os.path.join(id, filename))
         # output.write('<img src="images\{}">{} - {}<br/>'.format(filename, date.date.date(), date.moon_phase))
         # print to_print
 

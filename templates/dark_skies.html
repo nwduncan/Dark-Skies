@@ -3,8 +3,9 @@
 
 <head>
     <title>Dark Skies</title>
-    <link rel="stylesheet" media="screen" href ="static/css/bootstrap.css">
+    <!-- <link rel="stylesheet" media="screen" href ="static/css/bootstrap.css"> -->
     <link rel="stylesheet" href="static/css/bootstrap.css">
+<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
     <meta name="viewport" content = "width=device-width, initial-scale=1.0">
 </head>
 
@@ -49,28 +50,24 @@
         <br>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-
-        {% for message in messages %}
-            {% if "Error" not in message[1]: %}
-                <div class="alert alert-info">
-                <strong>Success! </strong> {{ message[1] }}
-                </div>
-                <p align="center">
-                {% for image in results %}
-                    <img src="static/images/{{ image }}"/><br/>
+                {% for message in messages %}
+                    {% if "Error" in message[1] %}
+                        <div class="alert alert-warning">
+                            {{ message[1] }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <strong>Success! </strong> {{ message[1] }}
+                        </div>
+                        <div style="line-height:0" align="center">
+                            {% for image in results %}
+                            <img class="inline-block" src="static/images/{{ image }}"/><br/>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 {% endfor %}
-            </p>
-            {% endif %}
-
-            {% if "Error" in message[1]: %}
-                <div class="alert alert-warning">
-                {{ message[1] }}
-                </div>
-            {% endif %}
-        {% endfor %}
             {% endif %}
         {% endwith %}
-
 </div>
 <br>
 </div>
