@@ -72,14 +72,22 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     calendar.compute_moon()
 
     # image variables
-    img_width = 912
+    img_width = 768
     img_height = 20
 
-    twilight_rgb = {'day': (142, 203, 238),
-                    'civil': (110, 157, 184),
-                    'nautical': (78, 112, 131),
-                    'astronomical':(46, 66, 78) ,
-                    'night': (6, 6, 6) }
+    twilight_rgb = {'day': (245, 192, 143),
+                    'civil': (220, 135, 91),
+                    'nautical': (155, 84, 81),
+                    'astronomical':(69, 36, 82),
+                    'night': (9, 4, 21) }
+
+
+    #
+    # twilight_rgb = {'day': (142, 203, 238),
+    #                 'civil': (110, 157, 184),
+    #                 'nautical': (78, 112, 131),
+    #                 'astronomical':(46, 66, 78) ,
+    #                 'night': (6, 6, 6) }
 
     # twilight_rgb = {'day': (255, 240, 231),
     #                 'civil': (252, 167, 123),
@@ -112,14 +120,14 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
             draw_overlay.rectangle((rand_x, rand_y, rand_x, rand_y), (255, 255, 255, randint(transp_limits[0], transp_limits[1])))
         return overlay
 
-    # header image
-    header = Image.new('RGB', (img_width, img_height), (0, 0, 0))
-    for x in range(0,img_width,(img_width/24)):
-        draw_header = ImageDraw.Draw(header)
-        draw_header.rectangle((x, 0, x, img_height), fill=(33,33,33))
-        path = os.path.join('static', 'images', id, 'header.png')
-        header.save(path)
-    output.append(os.path.join(id, 'header.png'))
+    # # header image
+    # header = Image.new('RGB', (img_width, img_height), (0, 0, 0))
+    # for x in range(0,img_width,(img_width/24)):
+    #     draw_header = ImageDraw.Draw(header)
+    #     draw_header.rectangle((x, 0, x, img_height), fill=(33,33,33))
+    #     path = os.path.join('static', 'images', id, 'header.png')
+    #     header.save(path)
+    # output.append(os.path.join(id, 'header.png'))
 
 
     for date in calendar.dates:
@@ -149,6 +157,13 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
             draw_moon.rectangle((length_count, 0, length+length_count, img_height), (255, 255, 255, opacity))
             length_count += length
         image = Image.alpha_composite(image, moon)
+        #
+        # grid = Image.new('RGBA', (img_width, img_height), (0, 0, 0, 0))
+        # draw_grid = ImageDraw.Draw(grid)
+        # for x in range(0,img_width,(img_width/24)):
+        #
+        #     draw_grid.rectangle((x, 0, x, img_height), fill=(255,255,255,25))
+        # image = Image.alpha_composite(image, grid)
 
         overlay = stars(img_width, img_height)
         image = Image.alpha_composite(image, overlay)
@@ -157,7 +172,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         draw_temp.rectangle((0, img_height-1, img_width, img_height), fill=(255,255,255,25))
         image = Image.alpha_composite(image, overlay)
         image.save(path)
-        output.append(os.path.join(id, filename))
+        output.append([os.path.join(id, filename), str(date.date)])
         # output.write('<img src="images\{}">{} - {}<br/>'.format(filename, date.date.date(), date.moon_phase))
         # print to_print
 
