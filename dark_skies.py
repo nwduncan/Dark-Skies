@@ -172,7 +172,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         draw_temp.rectangle((0, img_height-1, img_width, img_height), fill=(255,255,255,25))
         image = Image.alpha_composite(image, overlay)
         image.save(path)
-        output.append([os.path.join(id, filename), str(date.date)])
+        output.append([os.path.join(id, filename), date])
         # output.write('<img src="images\{}">{} - {}<br/>'.format(filename, date.date.date(), date.moon_phase))
         # print to_print
 

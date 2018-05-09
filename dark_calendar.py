@@ -165,6 +165,7 @@ class Calendar(object):
             time_left = 86400 - count
             date.moon_instructions.append([time_left, moon_status])
 
+            date.popover()
 
 
     def rise_and_set(self, body, date, horizon='0', use_center=False):
@@ -211,8 +212,11 @@ class Calendar(object):
 
 
     class Date(object):
+
         def __init__(self, date, utc_offset):
             self.date = date
+            self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            self.date_str = self.weekdays[self.date.weekday()]
             self.utc_offset = utc_offset
             self.sun_start = None
             self.sun_events = []
@@ -222,3 +226,29 @@ class Calendar(object):
             self.moon_illum = None
             self.moon_events = []
             self.moon_instructions = []
+            self.popover_instructions = []
+
+        def popover(self):
+            prev_time = self.date
+            for instr in self.sun_instructions:
+                start_mode = instr[1]
+                pop_start_mode = '<b>'+start_mode.title()+"&nbsp;"*(13-len(start_mode))+'</b>'
+                start_time = prev_time
+                pop_start_time = start_time.strftime('%H:%M')
+                end_time = start_time + timedelta(seconds=instr[0])
+                pop_end_time = end_time.strftime('%H:%M')
+                elapsed_time = end_time - start_time
+                pop_elapsed_time = str(elapsed_time.seconds//3600)+":"+str((elapsed_time.seconds//60)%60)
+                pop_elapsed_time = "&nbsp;"*(5-len(pop_elapsed_time))+pop_elapsed_time
+                pop_html = '<font face="consolas" size="2">'+pop_start_mode+"&emsp;"+pop_start_time+"&emsp;"+pop_end_time+"&emsp;"+pop_elapsed_time+'</font>'
+                self.popover_instructions.append(pop_html)
+                prev_time = end_time
+
+            # print i[0], i[1].strftime('%H:%M'), i[2].strftime('%H:%M'), str(i[3].seconds//3600)+":"+str((i[3].seconds//60)%60)
+
+            # [[start_mode, start_time, end_time, elapsed_time],]
+            # Day           12:00   18:00
+            # Civil         18:00   18:30   00:30
+            # Nautical      18:30   19:10   00:40
+            # Astronomical
+            # Night
