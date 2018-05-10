@@ -4,18 +4,28 @@
 <head>
     <title>Dark Skies</title>
     <!-- <link rel="stylesheet" media="screen" href ="static/css/bootstrap.css"> -->
-    <!-- <link rel="stylesheet" href="static/css/bootstrap.css"> -->
 <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
+    <!-- <script src="static/js/popper.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script> -->
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- <link rel="stylesheet" href="static/css/bootstrap.css">
+    <script src="static/js/popper.min.js"></script>
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script> -->
+
+
+
     <meta name="viewport" content = "width=device-width, initial-scale=1.0">
 </head>
-<script>
+<!-- <script>
 $(document).ready(function(){
     $('[data-toggle="popover"]').popover();
 });
-</script>
+</script> -->
 <body>
     <div class="container">
         <br>
@@ -68,7 +78,7 @@ $(document).ready(function(){
                         </div>
                         <div style="line-height:0" align="center">
                             {% for image in results %}
-                            <a href="#" title="{{ image[1].date_str }}" data-html="true" data-toggle="popover" data-trigger="hover" data-content="{% for instr in image[1].popover_instructions %} {{instr}}<br/> {% endfor %}"><img class="inline-block" src="static/images/{{ image[0] }}"/></a><br/>
+                            <a href="#" title="{{ image[1].header }}" data-placement="top" data-html="true" data-toggle="popover" data-trigger="hover" data-content="{% for instr in image[1].popover_instructions %} {{instr}}<br/> {% endfor %}"><img class="inline-block" src="static/images/{{ image[0] }}"/></a><br/>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -80,4 +90,9 @@ $(document).ready(function(){
 </div>
 </div>
 </body>
+<script>
+$(document).ready(function () {
+    $('[data-toggle="popover"]').popover();
+});
+</script>
 </html>

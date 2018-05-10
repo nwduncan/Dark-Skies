@@ -7,3 +7,4 @@ venv/
 images/
 working/
 app/
+static/

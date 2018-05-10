@@ -215,8 +215,12 @@ class Calendar(object):
 
         def __init__(self, date, utc_offset):
             self.date = date
-            self.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-            self.date_str = self.weekdays[self.date.weekday()]
+            # popover variables
+            self.month_str = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][self.date.month-1]
+            self.day_str = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][self.date.weekday()]
+            self.header = '<b>'+self.day_str+', '+str(self.date.day)+' '+self.month_str+' '+str(self.date.year)+'</b>'
+            self.popover_instructions = []
+
             self.utc_offset = utc_offset
             self.sun_start = None
             self.sun_events = []
@@ -226,9 +230,9 @@ class Calendar(object):
             self.moon_illum = None
             self.moon_events = []
             self.moon_instructions = []
-            self.popover_instructions = []
 
         def popover(self):
+            # sun details
             prev_time = self.date
             for instr in self.sun_instructions:
                 start_mode = instr[1]
@@ -239,10 +243,20 @@ class Calendar(object):
                 pop_end_time = end_time.strftime('%H:%M')
                 elapsed_time = end_time - start_time
                 pop_elapsed_time = str(elapsed_time.seconds//3600)+":"+str((elapsed_time.seconds//60)%60)
+                pop_elapsed_time = ':'.join([ '0'*(2-len(x))+x for x in pop_elapsed_time.split(':') ])
                 pop_elapsed_time = "&nbsp;"*(5-len(pop_elapsed_time))+pop_elapsed_time
-                pop_html = '<font face="consolas" size="2">'+pop_start_mode+"&emsp;"+pop_start_time+"&emsp;"+pop_end_time+"&emsp;"+pop_elapsed_time+'</font>'
+                pop_html = '<font face="consolas" size="2">'+pop_start_mode+"&emsp;&emsp;"+pop_start_time+"&emsp;&emsp;"+pop_end_time+"&emsp;&emsp;"+pop_elapsed_time+'</font>'
                 self.popover_instructions.append(pop_html)
                 prev_time = end_time
+
+            # moon details
+            # self.popover_instructions.append('<hr>')
+            for instr in self.moon_events:
+                moon_event = 'Moon '+instr[1].title()
+                moon_event = '<b>'+moon_event+"&nbsp;"*(13-len(moon_event))+'</b>'
+                moon_time = instr[0].strftime('%H:%M')
+                moon_html = '<font face="consolas" size="2">'+moon_event+"&emsp;&emsp;"+moon_time+'</font>'
+                self.popover_instructions.append(moon_html)
 
             # print i[0], i[1].strftime('%H:%M'), i[2].strftime('%H:%M'), str(i[3].seconds//3600)+":"+str((i[3].seconds//60)%60)
 
@@ -251,4 +265,5 @@ class Calendar(object):
             # Civil         18:00   18:30   00:30
             # Nautical      18:30   19:10   00:40
             # Astronomical
+            # Moon Rising
             # Night
