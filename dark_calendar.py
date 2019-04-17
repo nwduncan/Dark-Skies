@@ -139,7 +139,7 @@ class Calendar(object):
             elif 98 < lunation <= 100:
                 date.moon_phase = 'new moon'
 
-            date.moon_phase += " - " + str(round(lunation, 2)) + " - " + str(round(date.moon_illum*100, 1))
+            date.moon_phase #+= " - " + str(round(lunation, 2)) + " - " + str(round(date.moon_illum*100, 1))
 
             # moon rise and set
             rising, setting = self.rise_and_set(self.moon, date, use_center=True)
@@ -257,6 +257,11 @@ class Calendar(object):
                 moon_time = instr[0].strftime('%H:%M')
                 moon_html = '<font face="consolas" size="2">'+moon_event+"&emsp;&emsp;"+moon_time+'</font>'
                 self.popover_instructions.append(moon_html)
+
+            moon_phase = '<font face="consolas" size="2"><b>Moon Phase'+"&nbsp;"*(5)+'</b>'
+            moon_phase += self.moon_phase.title()+'</font>'
+
+            self.popover_instructions.append(moon_phase)
 
             # print i[0], i[1].strftime('%H:%M'), i[2].strftime('%H:%M'), str(i[3].seconds//3600)+":"+str((i[3].seconds//60)%60)
 

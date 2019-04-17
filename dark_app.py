@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, request, Markup
-from wtforms import Form, validators, DateField, IntegerField, FloatField
+from wtforms import Form, validators, DateField, IntegerField, DecimalField
 from dark_skies import dark_skies
 from datetime import datetime, timedelta
 
@@ -12,8 +12,8 @@ app.config['SECRET_KEY'] = '7d441f27d441f27567d441f2b6176a'
 datetime_format = '%Y-%m-%d'
 
 class ReusableForm(Form):
-    latitude = FloatField('Latitude:', validators=[validators.required(), validators.NumberRange(min=-180, max=180)])
-    longitude = FloatField('Longitude:', validators=[validators.required(), validators.NumberRange(min=-90, max=90)])
+    latitude = DecimalField('Latitude:', validators=[validators.required(), validators.NumberRange(min=-90, max=90)])
+    longitude = DecimalField('Longitude:', validators=[validators.required(), validators.NumberRange(min=-180, max=180)])
     start = DateField('Start:', validators=[validators.required()], format=datetime_format)
     end = DateField('End:', validators=[validators.required()], format=datetime_format)
     offset = IntegerField('Offset:', validators=[validators.NumberRange(min=0, max=24)])
@@ -67,11 +67,11 @@ def dark_index():
                 formatting['end']['highlight'] = ' is-invalid'
             else:
                 message = "Calculated."
-                results = dark_skies(start_dtobj, end_dtobj, int(formatting['offset']['value']))
+                results = dark_skies(start_dtobj, end_dtobj, float(formatting['latitude']['value']), float(formatting['longitude']['value']), int(formatting['offset']['value']))
 
             flash(message)
         else:
-            print form.errors
+            # print form.errors
             message = "Error:"+", ".join([ k+":"+v[0] for k, v in form.errors.iteritems() ])
             flash(message)
 

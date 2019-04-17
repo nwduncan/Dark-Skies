@@ -3,3 +3,4 @@ pandas==0.22.0
 Pillow==5.0.0
 pyephem==3.7.6.0
 pytz==2017.3
+wtforms==2.2.1

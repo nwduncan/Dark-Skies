@@ -15,6 +15,13 @@ name = "Albury"
 lat = -36.07
 lon = 146.91
 timezone = "Australia/Sydney"
+timezone = "Europe/London"
+observer = ephem.Observer()
+observer.name = name
+observer.lat = str(lat)
+observer.lon = str(lon)
+start_date = datetime(2018,1,1)
+end_date = datetime(2018,12,31)
 # location parameters
 # name = "Albury"
 # lat = 0
@@ -23,12 +30,12 @@ timezone = "Australia/Sydney"
 # elev = 160
 
 # observer initialisation
-observer = ephem.Observer()
-observer.name = name
-observer.lat = str(lat)
-observer.lon = str(lon)
-start_date = datetime(2018,1,1)
-end_date = datetime(2018,12,31)
+# observer = ephem.Observer()
+# observer.name = name
+# observer.lat = str(lat)
+# observer.lon = str(lon)
+# start_date = datetime(2018,1,1)
+# end_date = datetime(2018,12,31)
 
 def moon_phases(dates):
 
@@ -55,7 +62,7 @@ def moon_phases(dates):
         print "{} Next rising: {} {} {}%".format(day, next_rising, phase, int(round(moon.phase)))
 
 
-def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
+def dark_skies(start_date=start_date, end_date=end_date, lat=lat, lon=lon, time_adjust=12):
     id = str(uuid.uuid4())
     os.mkdir(os.path.join(os.getcwd(), 'static', 'images', id))
 
@@ -65,7 +72,24 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     # output = open('page.html', 'w')
     output = []
 
+    # name = "Albury"
+    # lat2 = -36.07
+    # lon2 = 146.91
+    # print lat, type(lat), lat2, type(lat2)
+    # print lon, type(lon), lon2, type(lon2)
+
+    timezone = "Australia/Sydney"
+    observer = ephem.Observer()
+    # observer.name = name
+    # start_date = datetime(2018,1,1)
+    # end_date = datetime(2018,12,31)
+
     # build our date objects
+    observer = ephem.Observer()
+    observer.lat = str(float(lat))
+    observer.lon = str(float(lon))
+    # observer.lat = str(lat)
+    # observer.lon = str(lon)
     calendar = dark_calendar.Calendar(start_date, end_date, time_adjust, observer, timezone)
     calendar.build_range()
     calendar.compute_sun()
@@ -75,13 +99,18 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
     img_width = 768
     img_height = 20
 
-    twilight_rgb = {'day': (245, 192, 143),
-                    'civil': (220, 135, 91),
-                    'nautical': (155, 84, 81),
-                    'astronomical':(69, 36, 82),
-                    'night': (9, 4, 21) }
+    twilight_rgb = {'day': (255, 142, 94),
+                    'civil': (255, 38, 34),
+                    'nautical': (150, 0, 49),
+                    'astronomical':(66, 1, 57),
+                    'night': (12, 1, 38) }
 
 
+    # twilight_rgb = {'day': (245, 192, 143),
+    #                 'civil': (220, 135, 91),
+    #                 'nautical': (155, 84, 81),
+    #                 'astronomical':(69, 36, 82),
+    #                 'night': (9, 4, 21) }
     #
     # twilight_rgb = {'day': (142, 203, 238),
     #                 'civil': (110, 157, 184),
@@ -169,7 +198,7 @@ def dark_skies(start_date=start_date, end_date=end_date, time_adjust=12):
         image = Image.alpha_composite(image, overlay)
         overlay = Image.new('RGBA', image.size, (0,0,0,0))
         draw_temp = ImageDraw.Draw(overlay)
-        draw_temp.rectangle((0, img_height-1, img_width, img_height), fill=(255,255,255,25))
+        draw_temp.rectangle((0, img_height-1, img_width, img_height), fill=(255,255,255,18))
         image = Image.alpha_composite(image, overlay)
         image.save(path)
         output.append([os.path.join(id, filename), date])
